@@ -18,11 +18,11 @@ macro_rules! measure {
             let start = Instant::now();
             let _1 = $x;
             let end = start.elapsed();
-            elapsed += end.as_secs() as f64 + end.subsec_micros() as f64 * 1E-6;
+            elapsed += end.as_secs() as f64 + end.subsec_micros() as f64 * 1E-6 + end.subsec_nanos() as f64 * 1E-9;
         }
         let elapsed_msec: f64 = 1000. * elapsed / $y as f64;
         println!(
-            "averaged process time over {} times: {:.5} msec.",
+            "averaged process time over {} times: {:.6} msec.",
             $y, elapsed_msec
         );
         elapsed_msec
@@ -56,15 +56,21 @@ where
 fn main() {
     let mut elapsed_list: Vec<f64> = Vec::new();
 
+    println!("Array creation:");
     println!("Array::range");
+    let first: f64 = 0.0;
+    let end: f64 = 10.0;
+    let step: f64 = (end - first) / (SHAPE.0 * SHAPE.1) as f64;
     elapsed_list.push(measure!(
-        Array::<f64, Ix1>::linspace(0., 10., SHAPE.0 * SHAPE.1),
+        Array::<f64, Ix1>::range(first, end, step),
         N_MEASURES
     ));
 
     println!("Array::linspace");
+    let first: f64 = 0.0;
+    let end: f64 = 10.0;
     elapsed_list.push(measure!(
-        Array::<f64, Ix1>::linspace(0., 10., SHAPE.0 * SHAPE.1),
+        Array::<f64, Ix1>::linspace(first, end, SHAPE.0 * SHAPE.1),
         N_MEASURES
     ));
 
@@ -74,7 +80,15 @@ fn main() {
     println!("Array::zeros");
     elapsed_list.push(measure!(Array::<f64, Ix2>::zeros(SHAPE), N_MEASURES));
 
-    println!("test_create_normal_distributed_ndarray");
+    println!("Array::from_elem");
+    let v: f64 = 7.0;
+    elapsed_list.push(measure!(Array::from_elem(SHAPE, v), N_MEASURES));
+
+    println!("Array::eye");
+    elapsed_list.push(measure!(Array::<f64, Ix2>::eye(SHAPE.0), N_MEASURES));
+
+    println!("Randomiz:");
+    println!("Normal distribution");
     let mu: f64 = 0.0;
     let sigma: f64 = 1.0;
     elapsed_list.push(measure!(
@@ -82,20 +96,74 @@ fn main() {
         N_MEASURES
     ));
 
-    println!("test_create_poisson_distributed_ndarray");
+    println!("Poisson distribution");
     let mu: f64 = 10.0;
     elapsed_list.push(measure!(
         test_create_poisson_distributed_ndarray(mu, SHAPE),
         N_MEASURES
     ));
 
-    println!("test_create_uniform_distributed_ndarray");
+    println!("Uniform distributino");
     let low: f64 = 0.0;
     let high: f64 = 1.0;
     elapsed_list.push(measure!(
         test_create_uniform_distributed_ndarray(low, high, SHAPE),
         N_MEASURES
     ));
+
+    println!("Mathematics:");
+    let mu: f64 = 0.0;
+    let sigma: f64 = 1.0;
+    let vec: Array1<f64> = initialize_randomized_ndarray(DistributionEnum::Normal, SHAPE.0 * SHAPE.1, &[mu, sigma]);
+    let vec2: Array1<f64> = initialize_randomized_ndarray(DistributionEnum::Normal, SHAPE.0 * SHAPE.1, &[mu, sigma]);
+    let mat: Array2<f64> = initialize_randomized_ndarray(DistributionEnum::Normal, SHAPE, &[mu, sigma]);
+    let mat2: Array2<f64> = initialize_randomized_ndarray(DistributionEnum::Normal, SHAPE, &[mu, sigma]);
+
+    println!("mat.reversed_axes");
+    elapsed_list.push(measure!(mat.t(), N_MEASURES));
+
+    println!("mat.dot(&mat2)");
+    elapsed_list.push(measure!(mat.dot(&mat2), N_MEASURES));
+
+    println!("a.dot(&vec)");
+    elapsed_list.push(measure!(mat.dot(&vec.slice(s![0..SHAPE.0])), N_MEASURES));
+
+    println!("vec.dot(&mat)");
+    elapsed_list.push(measure!(vec.slice(s![0..SHAPE.0]).dot(&mat), N_MEASURES));
+
+    println!("vec.dot(&vec2)");
+    elapsed_list.push(measure!(vec.dot(&vec2), N_MEASURES));
+
+    println!("&mat + &mat2");
+    elapsed_list.push(measure!(&mat + &mat2, N_MEASURES));
+
+    println!("mat**3");
+    elapsed_list.push(measure!(mat.mapv(|v| v.powi(3)), N_MEASURES));
+
+    println!("sqrt(mat)");
+    elapsed_list.push(measure!(mat.mapv(f64::sqrt), N_MEASURES));
+
+    println!("mat > 0.5");
+    elapsed_list.push(measure!(mat.mapv(|v| v > 0.5), N_MEASURES));
+
+    println!("mat.sum()");
+    elapsed_list.push(measure!(mat.sum(), N_MEASURES));
+
+    println!("mat.sum_axis(Axis(1))");
+    elapsed_list.push(measure!(mat.sum_axis(Axis(1)), N_MEASURES));
+
+    println!("mat.mean()");
+    elapsed_list.push(measure!(mat.mean(), N_MEASURES));
+
+    println!("mat.mean_axis(Axis(1))");
+    elapsed_list.push(measure!(mat.mean_axis(Axis(1)), N_MEASURES));
+
+    println!("mat.abs_diff_eq(&mat2, 1E-8)");
+    elapsed_list.push(measure!(mat.abs_diff_eq(&mat2, 1E-8), N_MEASURES));
+
+    println!("mat.diag()");
+    elapsed_list.push(measure!(mat.diag(), N_MEASURES));
+
     let mut file = File::create(SAVE_PATH).unwrap();
     for v in elapsed_list {
         writeln!(file, "{}", v.to_string()).unwrap();
