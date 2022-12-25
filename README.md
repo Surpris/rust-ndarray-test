@@ -12,11 +12,12 @@ Test to use ndarray and compare its performance with NumPy
 | RAM (GB)   | 4                                              |
 
 ## Rust
-| Item   | Version |
-| :----- | :------ |
-| rustup | 1.25.1  |
-| rustc  | 1.65.0  |
-| cargo  | 1.65.0  |
+| Item       | Version         |
+| :--------- | :-------------- |
+| rustup     | 1.25.1          |
+| rustc      | 1.65.0          |
+| cargo      | 1.65.0          |
+| dependency | see Cargo.toml. |
 
 ## Python
 | Item   | Version |
