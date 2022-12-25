@@ -8,8 +8,6 @@ Test to use ndarray and compare its performance with NumPy
 | Codespaces | 2-core, 4 GB RAM, 32 GB storage                |
 | OS         | Ubuntu 20.04.5 LTS (Focal Fossa)               |
 | CPU        | Intel(R) Xeon(R) Platinum 8272CL CPU @ 2.60GHz |
-| # of Cores | 2                                              |
-| RAM (GB)   | 4                                              |
 
 ## Rust
 | Item       | Version         |
