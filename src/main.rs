@@ -99,7 +99,7 @@ fn main() {
     println!("Array::eye");
     elapsed_list.push(measure!(Array::<f64, Ix2>::eye(SHAPE.0), n_measures));
 
-    println!("Randomiz:");
+    println!("Randomize:");
     println!("Normal distribution");
     let mu: f64 = 0.0;
     let sigma: f64 = 1.0;
@@ -139,7 +139,7 @@ fn main() {
     println!("mat.dot(&mat2)");
     elapsed_list.push(measure!(mat.dot(&mat2), n_measures));
 
-    println!("a.dot(&vec)");
+    println!("mat.dot(&vec)");
     elapsed_list.push(measure!(mat.dot(&vec.slice(s![0..SHAPE.0])), n_measures));
 
     println!("vec.dot(&mat)");
