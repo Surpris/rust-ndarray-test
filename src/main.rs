@@ -115,7 +115,7 @@ fn main() {
         n_measures
     ));
 
-    println!("Uniform distributino");
+    println!("Uniform distribution");
     let low: f64 = 0.0;
     let high: f64 = 1.0;
     elapsed_list.push(measure!(
@@ -191,8 +191,8 @@ fn main() {
     println!("stack![Axis(1), mat, mat2]");
     elapsed_list.push(measure!(stack![Axis(1), mat3, mat2], n_measures));
 
-    println!("mat.insert_axis(Axis(2))");
-    elapsed_list.push(measure!(mat3.slice(s![.., .., NewAxis]), n_measures));
+    println!("mat.insert_axis(Axis(1))");
+    elapsed_list.push(measure!(mat3.slice(s![.., NewAxis, ..]), n_measures));
 
     println!("mat.reversed_axes");
     elapsed_list.push(measure!(mat.t(), n_measures));
